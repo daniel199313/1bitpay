@@ -8,9 +8,10 @@ import { useApp } from "../../providers/app";
 
 interface IProps {
   data: IOrderPending;
+  onSubmit?: () => void;
 }
 
-export default ({ data }: IProps) => {
+export default ({ data, onSubmit }: IProps) => {
   const { api } = useServices();
   const { state } = useApp();
 
@@ -20,7 +21,9 @@ export default ({ data }: IProps) => {
     }
     api
       .confirmWithdraw({ id: data.id, password: "123456", status })
-      .then((res) => {});
+      .then((res) => {
+        onSubmit && onSubmit();
+      });
   };
   return (
     <Card>

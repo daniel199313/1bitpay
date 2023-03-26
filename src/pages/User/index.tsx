@@ -4,6 +4,7 @@ import UserInfoCard from "./UserInfoCard";
 import Cell from "../../components/Cell";
 import { SecondaryButton } from "../../components/Buttons";
 import { useServices } from "../../providers/services";
+import { useNavigate } from "react-router-dom";
 
 export default () => {
   const { state, setTitle, setUserInfo } = useApp();
@@ -37,13 +38,25 @@ export default () => {
       link: "about",
     },
   ];
+  const go = useNavigate();
 
   return (
     <div>
       <UserInfoCard />
       <Cell list={linkList1} />
       <Cell list={linkList2} />
-      <SecondaryButton className="h-[48px]">退出登录</SecondaryButton>
+      <SecondaryButton
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          localStorage.removeItem("baseURL");
+          localStorage.removeItem("app_state");
+          go("/login");
+        }}
+        className="h-[48px]"
+      >
+        退出登录
+      </SecondaryButton>
     </div>
   );
 };

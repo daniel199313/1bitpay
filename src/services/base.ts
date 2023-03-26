@@ -5,33 +5,6 @@ export const createServices = (baseURL: string) => {
   const services = axios.create({
     baseURL,
   });
-  services.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Auth-Token"] = `${token}`;
-      // content-type json
-      config.headers["Content-Type"] = "application/json";
-    }
-    return config;
-  });
-  // 拦截resopnse
-  services.interceptors.response.use(
-    (response) => {
-      console.log("response", response);
-      // 未登录
-      if (response.data.code === 2001) {
-        // localStorage.removeItem("token");
-        // localStorage.removeItem("role");
-        // localStorage.removeItem("baseURL");
-        // localStorage.removeItem("app_state");
-        // window.location.href = "/#/login";
-      }
-      return response;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
   return services;
 };
 

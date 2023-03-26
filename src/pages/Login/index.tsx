@@ -9,7 +9,7 @@ import { useApp } from "../../providers/app";
 import { useNavigate } from "react-router-dom";
 
 export default () => {
-  const { api, setServicesByBaseURL } = useServices();
+  const { api } = useServices();
   const { state, setRole, setToken, setUid } = useApp();
   const navigate = useNavigate();
 
@@ -85,7 +85,7 @@ export default () => {
       .then((res) => {
         // 设置role
         setRole(res.data.data.role);
-        setServicesByBaseURL(res.data.data.baseUrl);
+        localStorage.setItem("baseURL", res.data.data.baseUrl);
       });
   };
 
