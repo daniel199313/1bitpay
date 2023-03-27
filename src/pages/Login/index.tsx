@@ -2,78 +2,25 @@ import HeaderPNG from "../../static/login_header.png";
 import { Form, Input } from "../../components/Form";
 import { PrimaryButton } from "../../components/Buttons";
 import { phone, required } from "../../components/Form/rule";
-import Select from "../../components/Form/Select";
-import { useEffect, useState } from "react";
+import AreacodeSelect from "../../components/Form/AreacodeSelect";
+import { useCallback, useEffect, useState } from "react";
 import { useServices } from "../../providers/services";
 import { useApp } from "../../providers/app";
 import { useNavigate } from "react-router-dom";
+import { useFormState } from "../../components/Form/Form";
+import { useToast } from "../../components/Toast/context";
 
 export default () => {
   const { api } = useServices();
   const { state, setRole, setToken, setUid } = useApp();
   const navigate = useNavigate();
+  const { show } = useToast();
 
-  // 常见的国家区号
-  const [options, setOptions] = useState<{ value: string; label: string }[]>([
-    { value: "+86", label: "中国" },
-  ]);
-  const [filter, setFilter] = useState<string>("");
   const [areaCode, setAreaCode] = useState<string>("+86");
-  const handlerSelect = (value: string) => {
-    setAreaCode(value);
-  };
-
-  const filterOptions = () =>
-    options.filter((option) => {
-      return option.label.includes(filter) || option.value.includes(filter);
-    });
-
-  // 区号选择器
-  const btnAreaCode = (
-    <div className="flex items-center h-full px-2">
-      <Select
-        value={areaCode}
-        options={options}
-        onChange={handlerSelect}
-        render={(option) => option.value}
-        optionsRender={(options, handlerSelect) => {
-          return (
-            <div className="">
-              <div className="py-4 px-9  top-0 left-0 right-0 bg-white absolute">
-                <div className="my-[23px] font-medium">选择国家或地区</div>
-                <div className="border-solid border-1 border-background rounded-full p-4 w-full">
-                  <input
-                    type="text"
-                    placeholder="搜索"
-                    className="flex-1 text-center"
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      // 设置过滤
-                      setFilter(e.currentTarget.value);
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-scroll mt-[80px]">
-                {filterOptions().map((option) => {
-                  return (
-                    <div
-                      key={option.value}
-                      className="py-4 flex px-4 justify-between"
-                      onClick={() => handlerSelect(option)}
-                    >
-                      <div>{option.label}</div>
-                      <div>{option.value}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        }}
-      />
-    </div>
-  );
+  const { fields, errors, onInput, onError, hasError } = useFormState<{
+    phoneNumber: string;
+    code: string;
+  }>();
 
   const handlerPhoneBlur = (value: string) => {
     // 调用获取Role
@@ -89,39 +36,30 @@ export default () => {
       });
   };
 
-  useEffect(() => {
-    api.getCountryCode().then((res) => {
-      const { data } = res;
-      let options = data.data.map((item) => ({
-        value: item.phoneCodeStr,
-        label: item.zh,
-      }));
-      // 根据 value 去重
-      options = options.filter(
-        (item, index, self) =>
-          self.findIndex((t) => t.value === item.value) === index
-      );
-
-      setOptions(options);
+  const requestAreaCode = useCallback(() => {
+    return api.getCountryCode().then((res) => {
+      if (res.data.data.length > 0) {
+        return res.data.data.map((item) => {
+          return {
+            label: item["zh"],
+            value: item["phoneCodeStr"],
+          };
+        });
+      }
+      return [{ label: "中国", value: "+86" }];
     });
-    console.log(api);
   }, []);
 
-  // 发送验证码按钮
-  const btnSendCode = (
-    <div className="flex items-center h-full px-2">
-      <div className="text-primary">发送验证码</div>
-    </div>
-  );
-
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [code, setCode] = useState<string>("");
-
   const handlerSubmit = () => {
+    if (hasError) return show("请检查输入是否正确", "fail");
     // 调用登录接口
     api
       .login(
-        { phoneNumber: phoneNumber, regionCode: areaCode, code },
+        {
+          phoneNumber: fields["phoneNumber"],
+          regionCode: areaCode,
+          code: fields["code"],
+        },
         state.role!
       )
       .then((res) => {
@@ -145,17 +83,24 @@ export default () => {
             type="text"
             placeholder="请输入电话号码"
             rules={[required("电话号码不能为空"), phone("手机号格式不正确")]}
-            front={btnAreaCode}
+            front={
+              <AreacodeSelect
+                value={areaCode}
+                onSelect={setAreaCode}
+                request={requestAreaCode}
+              />
+            }
             onBlur={(e) => handlerPhoneBlur(e.currentTarget.value)}
-            onInput={(e) => setPhoneNumber(e.currentTarget.value)}
+            onInput={onInput}
+            onError={onError}
           ></Input>
           <Input
             name="code"
             type="text"
             placeholder="请输入验证码"
             rules={[required("验证码不能为空")]}
-            back={btnSendCode}
-            onInput={(e) => setCode(e.currentTarget.value)}
+            onInput={onInput}
+            onError={onError}
           ></Input>
           <div className="mt-[20px]">
             <PrimaryButton onClick={handlerSubmit} className=" h-[48px]">

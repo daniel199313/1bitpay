@@ -15,7 +15,7 @@ interface IProps {
   render?: (option: IOption) => React.ReactNode;
   optionsRender?: (
     options: IOption[],
-    handlerSelect: (option: IOption) => void
+    handlerSelect: (option?: IOption) => void
   ) => React.ReactNode;
 }
 
@@ -35,7 +35,7 @@ export default (props: IProps) => {
   const _render = render || ((option: IOption) => option.label);
   const _optionsRender =
     optionsRender ||
-    ((options: IOption[], handlerSelect: (option: IOption) => void) => {
+    ((options: IOption[], handlerSelect: (option?: IOption) => void) => {
       return options.map((option, index) => (
         <div
           className={classX("py-8", {
@@ -65,9 +65,12 @@ export default (props: IProps) => {
     setShowOptions(true);
   };
 
-  const handlerSelect = (option: IOption) => {
-    onChange(option.value);
+  const handlerSelect = (option?: IOption) => {
     setShowOptions(false);
+    if (!option) {
+      return;
+    }
+    onChange(option.value);
   };
 
   const handlerClose = () => {

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { FormEventHandler, useEffect, useRef, useState } from "react";
 import { RuleFunc } from "./rule";
 import { classX } from "../../utils/css";
 
@@ -11,7 +11,8 @@ interface InputProps {
   back?: React.ReactNode;
   className?: string;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onInput?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onInput?: FormEventHandler<HTMLInputElement>;
+  onError?: (errorEvt: { name: string; error?: string }) => void;
 }
 
 const verify = (value: string, rules: RuleFunc[] | undefined) => {
@@ -36,6 +37,7 @@ export const Input = ({
   className,
   onBlur,
   onInput,
+  onError,
 }: InputProps) => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [temp, setTemp] = useState<string | undefined>(undefined);
@@ -56,6 +58,11 @@ export const Input = ({
     }
     setError(error);
   };
+
+  useEffect(() => {
+    onError && onError({ name, error });
+  }, [error]);
+
   // 获得焦点时，如果有错误，恢复 value,清除错误
   const handlerFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

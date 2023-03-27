@@ -38,7 +38,7 @@ export default () => {
             <div className="mb-2">设置资金密码</div>
             <Input
               onInput={(e) => {
-                setPassword(e.target.value);
+                setPassword(e.currentTarget.value);
               }}
               type="password"
               name="password"
@@ -49,7 +49,7 @@ export default () => {
             <div className="mb-2">重复资金密码</div>
             <Input
               onInput={(e) => {
-                setConfirmPassword(e.target.value);
+                setConfirmPassword(e.currentTarget.value);
               }}
               type="password"
               name="password"
@@ -63,7 +63,7 @@ export default () => {
               name="password"
               placeholder="请输入验证码"
               onInput={(e) => {
-                setCode(e.target.value);
+                setCode(e.currentTarget.value);
               }}
               back={
                 <div className="h-full p-4 flex items-center justify-center">
