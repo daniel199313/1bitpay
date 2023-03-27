@@ -5,6 +5,9 @@ import { formatDate } from "../../utils/date";
 import { Link } from "react-router-dom";
 import { useServices } from "../../providers/services";
 import { useApp } from "../../providers/app";
+import { useToast } from "../../components/Toast/context";
+import SafeInput from "../../components/Form/SafeInput";
+import { useState } from "react";
 
 interface IProps {
   data: IOrderPending;
@@ -14,15 +17,30 @@ interface IProps {
 export default ({ data, onSubmit }: IProps) => {
   const { api } = useServices();
   const { state } = useApp();
+  const { show } = useToast();
+  const [showSafeInput, setShowSafeInput] = useState<boolean>(false);
+  const [_status, setStatus] = useState<number>(0);
 
   const handlerSubmit = (status: number) => {
     if (state.role === undefined) {
       return;
     }
+    setStatus(status);
+    setShowSafeInput(true);
+  };
+  const handlerConfirm = (password: string) => {
     api
-      .confirmWithdraw({ id: data.id, password: "123456", status })
+      .confirmWithdraw({ id: data.id, password, status: _status })
       .then((res) => {
         onSubmit && onSubmit();
+        if (res.data.code === 200) {
+          show("操作成功", "success");
+        } else {
+          show(res.data.msg, "fail");
+        }
+      })
+      .finally(() => {
+        setShowSafeInput(false);
       });
   };
   return (
@@ -61,6 +79,13 @@ export default ({ data, onSubmit }: IProps) => {
           </PrimaryButton>
         </div>
       </div>
+      <SafeInput
+        show={showSafeInput}
+        title={"请输入资金密码"}
+        len={6}
+        onCancel={() => setShowSafeInput(false)}
+        onConfirm={handlerConfirm}
+      ></SafeInput>
     </Card>
   );
 };

@@ -1,6 +1,8 @@
 import FissionCard from "../../components/Card/FissionCard";
 import { shortText } from "../../utils/text";
 import { useLocation } from "react-router-dom";
+import SafeInput from "../../components/Form/SafeInput";
+import { useState } from "react";
 
 interface ISubProps {
   state: IOrderPending;
@@ -52,10 +54,15 @@ const detail = ({ state }: ISubProps) => {
 };
 
 const footer = ({ state }: ISubProps) => {
+  const [showSafeInput, setShowSafeInput] = useState(false);
+
   return (
     <div className="flex justify-between">
       {state.orderStatus === 0 && (
-        <div className=" bg-primary w-full px-[20px] py-[15px] text-center">
+        <div
+          onClick={(e) => setShowSafeInput(true)}
+          className=" bg-primary w-full px-[20px] py-[15px] text-center"
+        >
           签名
         </div>
       )}
@@ -69,6 +76,13 @@ const footer = ({ state }: ISubProps) => {
           {statusMap[state.orderStatus]}
         </div>
       )}
+      <SafeInput
+        onCancel={() => setShowSafeInput(false)}
+        onConfirm={() => setShowSafeInput(false)}
+        show={showSafeInput}
+        title={"请输入资金密码"}
+        len={6}
+      />
     </div>
   );
 };
